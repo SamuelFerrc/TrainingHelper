@@ -5,6 +5,8 @@ import config
 import os
 import random
 
+from config import training_distance_y
+
 arquivo_path = os.path.join(config.output, f"treinamento_{config.index}.txt")
 amostras_positivas = 0
 amostras_negativas = 0
@@ -28,19 +30,24 @@ def escrever_arquivo(conteudo):
 
 def processar_pixel(color, distance_x, distance_y):
     global amostras_positivas, amostras_negativas, amostras_total
-    if distance_x <= config.training_distance_x and distance_y <= config.training_distance_y:
-        if(amostras_positivas >= maximo_amostras/2):
-            return
-        amostras_positivas += 1
-        amostras_total +=1
 
+    dentro_da_regiao = distance_x <= config.training_distance_x and distance_y <= config.training_distance_y
+    print("\n")
+    print(dentro_da_regiao)
+    label = "+1" if dentro_da_regiao else "-1"
+
+    if dentro_da_regiao:
+        if amostras_positivas >= maximo_amostras / 2:
+            return  # excesso de positivas
+        amostras_positivas += 1
     else:
-        if (amostras_negativas >= maximo_amostras / 2):
-            return
+        if amostras_negativas >= maximo_amostras / 2:
+            return  # excesso de negativas
         amostras_negativas += 1
-        amostras_total +=1
-    label = "+1" if distance_x <= config.training_distance_x and distance_y <= config.training_distance_y else "-1"
+
+    amostras_total += 1
     return f"{color[0]}\t{color[1]}\t{color[2]}\t{label}"
+
 def processar_imagem(imagem: Image.Image, xD, yD):
 
     global amostras_positivas, amostras_negativas, amostras_total
@@ -57,7 +64,10 @@ def processar_imagem(imagem: Image.Image, xD, yD):
         y = random.randint(0,altura-1)
         ##print(distancia(x,y, largura/2, altura/2))
         ##print(pixels[x,y])
-        valor = processar_pixel(pixels[x,y],abs((largura/2 + xD) - x),abs((altura/2 + yD) - y))
+        valor = processar_pixel(pixels[x,y],abs((largura/2 - xD) - x),abs((altura/2 - yD) - y))
+        print(f"{abs((largura/2-xD) - x)} + {abs((altura/2 - yD) - y)}")
+        print(f"{config.training_distance_x} + {config.training_distance_y}")
+        print(valor)
         if valor is not None:
             escrever_arquivo(valor)
 

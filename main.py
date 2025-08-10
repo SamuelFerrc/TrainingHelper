@@ -40,9 +40,9 @@ def desenhar_imagem(offset_x=0, offset_y=0, max_largura=800, max_altura=600):
 
     if distancefield.get() != 0 and slider_eli.get() != 0:
         raio_x = int(int(distancefield.get()) * escala)  # você pode ajustar esse valor para distorcer mais no eixo X
-        raio_y = int(slider_eli.get() * escala * 0.6)  # por exemplo: 0.6 torna a elipse mais "achatada"
+        raio_y = int(slider_eli.get() * escala)  # por exemplo: 0.6 torna a elipse mais "achatada"
         bbox = (cx - raio_x, cy - raio_y, cx + raio_x, cy + raio_y)
-        draw.ellipse(bbox, outline="blue", width=2)
+        draw.ellipse(bbox, outline="blue", width=1)
 
     imagem_tk = ImageTk.PhotoImage(imagem)
     label_imagem.config(image=imagem_tk)
@@ -74,7 +74,11 @@ def treinar_botao():
         return
 
     if imagem_original is not None:
+        print("Processando Imagem!")
+        print(f"CX == {centro_offset_x}, CY == {centro_offset_y}")
+        print(f"X == {distancefield.get()}, Y == {slider_eli.get()}")
         pi(imagem_original, slider_x.get(), slider_y.get())
+
     config.index += 1
 
 def on_slider_eli(val):

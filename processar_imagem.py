@@ -1,17 +1,13 @@
-import math
-
-from PIL import Image, ImageTk
+from PIL import Image
 import config
 import os
 import random
-
-from config import training_distance_y
 
 arquivo_path = os.path.join(config.output, f"treinamento_{config.index}.txt")
 amostras_positivas = 0
 amostras_negativas = 0
 amostras_total = 0
-maximo_amostras = 4096
+maximo_amostras = 16384
 
 def criar_arquivo():
     global arquivo_path
@@ -31,18 +27,16 @@ def escrever_arquivo(conteudo):
 def processar_pixel(color, distance_x, distance_y):
     global amostras_positivas, amostras_negativas, amostras_total
 
-    dentro_da_regiao = distance_x <= config.training_distance_x and distance_y <= config.training_distance_y
-    print("\n")
-    print(dentro_da_regiao)
-    label = "+1" if dentro_da_regiao else "-1"
+    dentro_da_elipse = (distance_x**2) / (config.training_distance_x**2) + (distance_y**2) / (config.training_distance_y**2) <= 1
+    label = "+1" if dentro_da_elipse else "-1"
 
-    if dentro_da_regiao:
+    if dentro_da_elipse:
         if amostras_positivas >= maximo_amostras / 2:
-            return  # excesso de positivas
+            return
         amostras_positivas += 1
     else:
         if amostras_negativas >= maximo_amostras / 2:
-            return  # excesso de negativas
+            return
         amostras_negativas += 1
 
     amostras_total += 1
@@ -50,7 +44,7 @@ def processar_pixel(color, distance_x, distance_y):
 
 def processar_imagem(imagem: Image.Image, xD, yD):
 
-    global amostras_positivas, amostras_negativas, amostras_total
+    global amostras_positivas, amostras_negativas, amostras_total, maximo_amostras
     pixels = imagem.load()
     largura, altura = imagem.size
     print("Processando Imagem!")
@@ -62,12 +56,9 @@ def processar_imagem(imagem: Image.Image, xD, yD):
     while (amostras_total < maximo_amostras):
         x = random.randint(0,largura-1)
         y = random.randint(0,altura-1)
-        ##print(distancia(x,y, largura/2, altura/2))
-        ##print(pixels[x,y])
-        valor = processar_pixel(pixels[x,y],abs((largura/2 - xD) - x),abs((altura/2 - yD) - y))
-        print(f"{abs((largura/2-xD) - x)} + {abs((altura/2 - yD) - y)}")
-        print(f"{config.training_distance_x} + {config.training_distance_y}")
-        print(valor)
+
+        valor = processar_pixel(pixels[x,y],abs((largura/2 + xD) - x),abs((altura/2 + yD) - y))
+
         if valor is not None:
             escrever_arquivo(valor)
 

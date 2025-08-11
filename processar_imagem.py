@@ -27,17 +27,23 @@ def escrever_arquivo(conteudo):
 def processar_pixel(color, distance_x, distance_y):
     global amostras_positivas, amostras_negativas, amostras_total
 
-    dentro_da_elipse = (distance_x**2) / (config.training_distance_x**2) + (distance_y**2) / (config.training_distance_y**2) <= 1
-    label = "+1" if dentro_da_elipse else "-1"
+    dentro_da_elipseP = (distance_x**2) / (config.training_distance_x**2) + (distance_y**2) / (config.training_distance_y**2) <= 1
+    fora_da_elipseN = (distance_x**2) / (config.training_distance_nx**2) + (distance_y**2) / (config.training_distance_ny**2) >= 1
+    if dentro_da_elipseP:
+        label = "+1"
+    elif fora_da_elipseN:
+        label = "-1"
 
-    if dentro_da_elipse:
+    if dentro_da_elipseP:
         if amostras_positivas >= maximo_amostras / 2:
             return
         amostras_positivas += 1
-    else:
+    elif fora_da_elipseN:
         if amostras_negativas >= maximo_amostras / 2:
             return
         amostras_negativas += 1
+    else:
+        return None
 
     amostras_total += 1
     return f"{color[0]}\t{color[1]}\t{color[2]}\t{label}"
